@@ -32,7 +32,7 @@ async function main() {
         process.exit(1);
     }
     fs.mkdirSync(targetDir, { recursive: true });
-    const templateRoot = path.resolve(__dirname, 'templates');
+    const templateRoot = path.resolve(__dirname, 'templates', 'demo-app');
     await copyTemplate(templateRoot, targetDir, {
         __APP_NAME__: res.appName,
         __USE_TS__: String(res.useTS),
