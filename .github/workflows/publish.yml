@@ -8,11 +8,11 @@ on:
             version_source:
                 description: "How to determine version to publish"
                 required: true
-                default: "latest_tag"
+                default: "package_json"
                 type: choice
                 options:
-                    - latest_tag
                     - package_json
+                    - latest_tag
                     - manual
             manual_tag:
                 description: "Manual tag (only if 'manual' is selected above)"
@@ -48,7 +48,12 @@ jobs:
                     case "${{ github.event.inputs.version_source }}" in
                       "latest_tag")
                         echo "Using latest git tag..."
-                        TAG=$(git describe --tags --abbrev=0)
+                        TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+                        if [ -z "$TAG" ]; then
+                          echo "⚠️  No git tags found, falling back to package.json version"
+                          VERSION=$(node -p "require('./package.json').version")
+                          TAG="v$VERSION"
+                        fi
                         ;;
                       "package_json")
                         echo "Using version from package.json..."
@@ -58,6 +63,10 @@ jobs:
                       "manual")
                         echo "Using manually specified tag..."
                         TAG="${{ github.event.inputs.manual_tag }}"
+                        if [ -z "$TAG" ]; then
+                          echo "❌ Manual tag is required when 'manual' option is selected"
+                          exit 1
+                        fi
                         ;;
                     esac
                   else
@@ -65,12 +74,19 @@ jobs:
                     TAG=${GITHUB_REF#refs/tags/}
                   fi
 
+                  # Extract version from tag (remove 'v' prefix if present)
                   VERSION=${TAG#v}
                   CURRENT_VERSION=$(node -p "require('./package.json').version")
 
                   echo "Target tag: $TAG"
                   echo "Target version: $VERSION"
                   echo "Current package.json version: $CURRENT_VERSION"
+
+                  # Validate version format
+                  if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+'; then
+                    echo "❌ Invalid version format: $VERSION"
+                    exit 1
+                  fi
 
                   # Set outputs for later steps
                   echo "tag=$TAG" >> $GITHUB_OUTPUT
