@@ -153,7 +153,7 @@ jobs:
                   script: |
                       const tag = '${{ steps.version.outputs.tag }}';
                       const version = '${{ steps.version.outputs.version }}';
-                      
+
                       core.summary
                         .addHeading('🎉 Successfully Published to NPM!')
                         .addTable([
