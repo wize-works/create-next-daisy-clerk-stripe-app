@@ -1,0 +1,21 @@
+{
+    "compilerOptions": {
+        "target": "ES2022",
+        "module": "ES2022",
+        "moduleResolution": "Bundler",
+        "outDir": "dist",
+        "esModuleInterop": true,
+        "resolveJsonModule": true,
+        "skipLibCheck": true,
+        "types": [
+            "node"
+        ],
+        "noEmitOnError": true
+    },
+    "include": [
+        "src"
+    ],
+    "exclude": [
+        "src/templates"
+    ]
+}

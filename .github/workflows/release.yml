@@ -1,0 +1,125 @@
+name: Release
+
+on:
+    workflow_dispatch:
+        inputs:
+            version_type:
+                description: "Version bump type"
+                required: true
+                default: "patch"
+                type: choice
+                options:
+                    - patch
+                    - minor
+                    - major
+            prerelease:
+                description: "Create as prerelease"
+                required: false
+                default: false
+                type: boolean
+
+jobs:
+    release:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+              with:
+                  token: ${{ secrets.GITHUB_TOKEN }}
+                  fetch-depth: 0
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "20.x"
+                  cache: "npm"
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Build package
+              run: npm run build
+
+            - name: Configure Git
+              run: |
+                  git config --local user.email "action@github.com"
+                  git config --local user.name "GitHub Action"
+
+            - name: Bump version
+              id: version
+              run: |
+                  # Get current version
+                  CURRENT_VERSION=$(node -p "require('./package.json').version")
+                  echo "Current version: $CURRENT_VERSION"
+
+                  # Bump version
+                  NEW_VERSION=$(npm version ${{ github.event.inputs.version_type }} --no-git-tag-version)
+                  echo "New version: $NEW_VERSION"
+
+                  # Set output for next steps
+                  echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+                  echo "version_number=${NEW_VERSION#v}" >> $GITHUB_OUTPUT
+
+            - name: Update CHANGELOG
+              run: |
+                  VERSION="${{ steps.version.outputs.version_number }}"
+                  DATE=$(date +'%Y-%m-%d')
+
+                  # Create new changelog entry
+                  sed -i "s/## \[Unreleased\]/## [Unreleased]\n\n## [$VERSION] - $DATE/" CHANGELOG.md
+
+                  # Add new release link at the bottom
+                  sed -i "/\[Unreleased\]/s|HEAD|v$VERSION...HEAD|" CHANGELOG.md
+                  sed -i "/\[Unreleased\]/a [$VERSION]: https://github.com/wizeworks/create-next-daisy-clerk-stripe-app/releases/tag/v$VERSION" CHANGELOG.md
+
+            - name: Commit changes
+              run: |
+                  git add package.json CHANGELOG.md
+                  git commit -m "chore: bump version to ${{ steps.version.outputs.version }}"
+                  git tag ${{ steps.version.outputs.version }}
+
+            - name: Push changes
+              run: |
+                  git push origin main
+                  git push origin ${{ steps.version.outputs.version }}
+
+            - name: Generate release notes
+              id: notes
+              run: |
+                  VERSION="${{ steps.version.outputs.version_number }}"
+
+                  # Extract changelog for this version
+                  CHANGELOG_CONTENT=$(sed -n "/## \[$VERSION\]/,/## \[/p" CHANGELOG.md | sed '$d' | tail -n +2)
+
+                  # Create release notes
+                  cat > release_notes.md << EOF
+                  ## What's Changed
+
+                  $CHANGELOG_CONTENT
+
+                  ## Installation
+
+                  \`\`\`bash
+                  npx create-next-daisy-clerk-stripe-app@latest my-app
+                  \`\`\`
+
+                  ## Full Changelog
+
+                  **Full Changelog**: https://github.com/wizeworks/create-next-daisy-clerk-stripe-app/compare/v${CURRENT_VERSION}...${{ steps.version.outputs.version }}
+                  EOF
+
+                  echo "notes<<EOF" >> $GITHUB_OUTPUT
+                  cat release_notes.md >> $GITHUB_OUTPUT
+                  echo "EOF" >> $GITHUB_OUTPUT
+
+            - name: Create GitHub Release
+              uses: actions/create-release@v1
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  tag_name: ${{ steps.version.outputs.version }}
+                  release_name: Release ${{ steps.version.outputs.version }}
+                  body: ${{ steps.notes.outputs.notes }}
+                  draft: false
+                  prerelease: ${{ github.event.inputs.prerelease }}

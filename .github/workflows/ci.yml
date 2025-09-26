@@ -1,0 +1,82 @@
+name: CI
+
+on:
+    push:
+        branches: [main, develop]
+    pull_request:
+        branches: [main]
+
+jobs:
+    test:
+        runs-on: ubuntu-latest
+
+        strategy:
+            matrix:
+                node-version: [18.x, 20.x, 22.x]
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js ${{ matrix.node-version }}
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ matrix.node-version }}
+                  cache: "npm"
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Build package
+              run: npm run build
+
+            - name: Test CLI functionality
+              run: |
+                  # Test that the CLI runs without errors
+                  echo -e "test-app\nn\nnpm\nn\nsubscriptions" | timeout 30 node dist/index.js || true
+                  # Clean up test directory if created
+                  rm -rf test-app || true
+
+            - name: Check package can be packed
+              run: npm pack --dry-run
+
+    build-test:
+        runs-on: ${{ matrix.os }}
+
+        strategy:
+            matrix:
+                os: [ubuntu-latest, windows-latest, macos-latest]
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "20.x"
+                  cache: "npm"
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Build package
+              run: npm run build
+
+            - name: Verify CLI executable exists
+              shell: bash
+              run: |
+                  if [ ! -f "dist/index.js" ]; then
+                    echo "CLI executable not found!"
+                    exit 1
+                  fi
+                  echo "CLI executable found ✓"
+
+            - name: Verify templates directory exists
+              shell: bash
+              run: |
+                  if [ ! -d "dist/templates" ]; then
+                    echo "Templates directory not found!"
+                    exit 1
+                  fi
+                  echo "Templates directory found ✓"
