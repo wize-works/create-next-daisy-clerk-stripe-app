@@ -64,18 +64,18 @@ jobs:
                     # Release trigger
                     TAG=${GITHUB_REF#refs/tags/}
                   fi
-                  
+
                   VERSION=${TAG#v}
                   CURRENT_VERSION=$(node -p "require('./package.json').version")
-                  
+
                   echo "Target tag: $TAG"
                   echo "Target version: $VERSION"
                   echo "Current package.json version: $CURRENT_VERSION"
-                  
+
                   # Set outputs for later steps
                   echo "tag=$TAG" >> $GITHUB_OUTPUT
                   echo "version=$VERSION" >> $GITHUB_OUTPUT
-                  
+
                   # Update package.json if needed
                   if [ "$VERSION" != "$CURRENT_VERSION" ]; then
                     echo "Updating package.json from $CURRENT_VERSION to $VERSION"
