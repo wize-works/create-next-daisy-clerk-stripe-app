@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] - 2025-09-25
 
 ### Added
-- Initial release of create-next-daisy-clerk-stripe-app CLI
+- Initial release of @wizeworks/create-next-daisy-clerk-stripe-app CLI
 - Interactive project scaffolding with prompts for:
   - App name and directory
   - TypeScript support (configurable)

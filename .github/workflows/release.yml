@@ -101,7 +101,7 @@ jobs:
                   ## Installation
 
                   \`\`\`bash
-                  npx create-next-daisy-clerk-stripe-app@latest my-app
+                  npx @wizeworks/create-next-daisy-clerk-stripe-app@latest my-app
                   \`\`\`
 
                   ## Full Changelog

@@ -71,7 +71,7 @@ jobs:
                         tag: tag
                       });
 
-                      const comment = `🎉 Successfully published to NPM!\n\nVersion: ${version}\nPackage: create-next-daisy-clerk-stripe-app@${version}\n\nInstall with: npx create-next-daisy-clerk-stripe-app@latest my-app`;
+                      const comment = `🎉 Successfully published to NPM!\n\nVersion: ${version}\nPackage: @wizeworks/create-next-daisy-clerk-stripe-app@${version}\n\nInstall with: npx @wizeworks/create-next-daisy-clerk-stripe-app@latest my-app`;
 
                       await github.rest.issues.createComment({
                         owner: context.repo.owner,

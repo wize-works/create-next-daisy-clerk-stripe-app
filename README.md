@@ -1,8 +1,8 @@
 # create-next-daisy-clerk-stripe-app
 
 [![CI](https://github.com/wizeworks/create-next-daisy-clerk-stripe-app/actions/workflows/ci.yml/badge.svg)](https://github.com/wizeworks/create-next-daisy-clerk-stripe-app/actions/workflows/ci.yml)
-[![NPM Version](https://img.shields.io/npm/v/create-next-daisy-clerk-stripe-app?color=2563eb)](https://www.npmjs.com/package/create-next-daisy-clerk-stripe-app)
-[![NPM Downloads](https://img.shields.io/npm/dm/create-next-daisy-clerk-stripe-app?color=2563eb)](https://www.npmjs.com/package/create-next-daisy-clerk-stripe-app)
+[![NPM Version](https://img.shields.io/npm/v/@wizeworks/create-next-daisy-clerk-stripe-app?color=2563eb)](https://www.npmjs.com/package/@wizeworks/create-next-daisy-clerk-stripe-app)
+[![NPM Downloads](https://img.shields.io/npm/dm/@wizeworks/create-next-daisy-clerk-stripe-app?color=2563eb)](https://www.npmjs.com/package/@wizeworks/create-next-daisy-clerk-stripe-app)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 > Scaffold a Next.js app with DaisyUI, Clerk, and Stripe subscriptions in minutes.
@@ -23,17 +23,17 @@ A CLI tool that creates a production-ready SaaS starter template with authentica
 ## Quick Start
 
 ```bash
-npx create-next-daisy-clerk-stripe-app@latest my-saas-app
+npx @wizeworks/create-next-daisy-clerk-stripe-app@latest my-saas-app
 ```
 
 Or with your preferred package manager:
 
 ```bash
 # Using pnpm
-pnpm create next-daisy-clerk-stripe-app my-saas-app
+pnpm create @wizeworks/next-daisy-clerk-stripe-app my-saas-app
 
 # Using yarn
-yarn create next-daisy-clerk-stripe-app my-saas-app
+yarn create @wizeworks/next-daisy-clerk-stripe-app my-saas-app
 ```
 
 ## Interactive Setup
