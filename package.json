@@ -1,6 +1,6 @@
 {
     "name": "@wizeworks/create-next-daisy-clerk-stripe-app",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "description": "Scaffold a Next.js app with DaisyUI, Clerk, and Stripe subscriptions in minutes.",
     "author": "WizeWorks",
     "bin": {
