@@ -109,12 +109,6 @@ jobs:
               uses: actions/github-script@v7
               with:
                   script: |
-                      const { data: release } = await github.rest.repos.getReleaseByTag({
-                        owner: context.repo.owner,
-                        repo: context.repo.repo,
-                        tag: '${{ steps.version.outputs.tag }}'
-                      });
-
                       await github.rest.repos.createDeployment({
                         owner: context.repo.owner,
                         repo: context.repo.repo,
@@ -125,25 +119,49 @@ jobs:
                         required_contexts: []
                       });
 
-            - name: Comment on release
+            - name: Comment on release (if exists)
+              if: github.event_name == 'release'
               uses: actions/github-script@v7
               with:
                   script: |
-                      // Get version from previous step or context
-                      const tag = '${{ steps.version.outputs.tag }}' || context.ref.replace('refs/tags/', '');
-                      const version = '${{ steps.version.outputs.version }}' || tag.replace(/^v/, '');
+                      const tag = '${{ steps.version.outputs.tag }}';
+                      const version = '${{ steps.version.outputs.version }}';
 
-                      const { data: release } = await github.rest.repos.getReleaseByTag({
-                        owner: context.repo.owner,
-                        repo: context.repo.repo,
-                        tag: '${{ steps.version.outputs.tag }}'
-                      });
+                      try {
+                        const { data: release } = await github.rest.repos.getReleaseByTag({
+                          owner: context.repo.owner,
+                          repo: context.repo.repo,
+                          tag: tag
+                        });
 
-                      const comment = `🎉 Successfully published to NPM!\n\nVersion: ${version}\nPackage: @wizeworks/create-next-daisy-clerk-stripe-app@${version}\n\nInstall with: npx @wizeworks/create-next-daisy-clerk-stripe-app@latest my-app`;
+                        const comment = `🎉 Successfully published to NPM!\n\nVersion: ${version}\nPackage: @wizeworks/create-next-daisy-clerk-stripe-app@${version}\n\nInstall with: npx @wizeworks/create-next-daisy-clerk-stripe-app@latest my-app`;
 
-                      await github.rest.issues.createComment({
-                        owner: context.repo.owner,
-                        repo: context.repo.repo,
-                        issue_number: release.id,
-                        body: comment
-                      });
+                        await github.rest.issues.createComment({
+                          owner: context.repo.owner,
+                          repo: context.repo.repo,
+                          issue_number: release.number,
+                          body: comment
+                        });
+                      } catch (error) {
+                        console.log('Release not found or unable to comment:', error.message);
+                      }
+
+            - name: Create success summary
+              if: github.event_name == 'workflow_dispatch'
+              uses: actions/github-script@v7
+              with:
+                  script: |
+                      const tag = '${{ steps.version.outputs.tag }}';
+                      const version = '${{ steps.version.outputs.version }}';
+                      
+                      core.summary
+                        .addHeading('🎉 Successfully Published to NPM!')
+                        .addTable([
+                          [{data: 'Property', header: true}, {data: 'Value', header: true}],
+                          ['Version', version],
+                          ['Tag', tag],
+                          ['Package', `@wizeworks/create-next-daisy-clerk-stripe-app@${version}`],
+                          ['Install Command', `npx @wizeworks/create-next-daisy-clerk-stripe-app@latest my-app`]
+                        ])
+                        .addLink('View on NPM', `https://www.npmjs.com/package/@wizeworks/create-next-daisy-clerk-stripe-app`)
+                        .write();
